@@ -1,0 +1,36 @@
+Bootstrap: docker
+From: ubuntu:bionic
+
+%labels
+Maintainer eric.burgueno@plantandfood.co.nz
+Version 
+
+%post
+  ## Download build prerequisites
+  apt-get update
+  apt-get -y install blast2 make python-biopython python-numpy python-regex python-scikits-learn python-scipy wget
+
+  ## Setup (according to http://ccbb.jnu.ac.in/plncpro/docs/manual.pdf)
+  cd /opt
+  wget http://ccbb.jnu.ac.in/plncpro/downloads/plncpro_1.1.tar.gz
+  tar -xzf plncpro_1.1.tar.gz 
+  cd plncpro_1.1/lib/estate
+  make
+  ln -f bin/framefinder ../framefinder/
+  cd ..
+  mkdir -p blast/bin
+  for i in bl2seq blastall blastpgp fastacmd formatdb megablast rpsblast seedtop; do ln -s /usr/bin/$i blast/bin/; done
+
+  ## Cleanup
+  apt-get -y autoremove make wget
+  apt-get -y clean all
+  rm -rf /opt/plncpro_1.1.tar.gz
+
+%runscript
+if [ $# -eq 0 ]; then
+  echo -e 'This Singularity image cannot provide a single entrypoint. Please use `<image-name.simg> <CMD>` or `singularity exec <image-name.simg> python /opt/plncpro_1.1/<CMD>`, where <CMD> is one of the following:\n'
+  exec ls -l /opt/plncpro_1.1|grep .py|awk '{print $NF}'
+else
+  cd /opt/plncpro_1.1
+  exec python "$@"
+fi
