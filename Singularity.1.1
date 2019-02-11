@@ -28,8 +28,9 @@ Version
 
 %runscript
 if [ $# -eq 0 ]; then
-  echo -e 'This Singularity image cannot provide a single entrypoint. Please use `<image-name.simg> <CMD>` or `singularity exec <image-name.simg> python /opt/plncpro_1.1/<CMD>`, where <CMD> is one of the following:\n'
-  exec ls -l /opt/plncpro_1.1|grep .py|awk '{print $NF}'
+  /bin/echo -e "This Singularity image cannot provide a single entrypoint. Please use \"$SINGULARITY_NAME <cmd>\" or \"singularity exec $SINGULARITY_NAME <cmd>\", where <cmd> is one of the following:\n"
+  cd /opt/plncpro_1.1
+  exec ls *.py
 else
   cd /opt/plncpro_1.1
   exec python "$@"
